@@ -14,9 +14,9 @@ set(CONFIG src/server/Configuration.cc)
 
 add_compile_options(-Wall -g)
 
-add_executable(wordDict testWord.cc ${DICT} ${CONFIG} )
+add_executable(wordDict ${DICT} ${CONFIG}  testWord.cc)
 
-add_executable(keyWord testKey.cc ${KEY} ${TCPSERVER} ${CONFIG})
+add_executable(keyWord ${KEY} ${TCPSERVER} ${CONFIG} testKey.cc)
 
 # set_target_properties(wordDict PROPERTIES
 #     RUNTIME_OUTPUT_DIRECTORY ../bin

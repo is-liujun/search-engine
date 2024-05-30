@@ -3,18 +3,22 @@
 #include "Acceptor.hpp"
 
 #include <sys/eventfd.h>
+#include <sys/timerfd.h>
 #include <unistd.h>
 #include <iostream>
 
 Eventloop::Eventloop(Acceptor &acceptor)
 :_epfd(createEpollfd())
 ,_evtfd(createEventfd())
+,_timerfd(createTimerfd())
 , _isloop(false)
 , _evtlist(1024)
 , _acceptor(acceptor)
 {
     addEpollReadFd(acceptor.fd());
     addEpollReadFd(_evtfd);
+    addEpollReadFd(_timerfd);
+    setTimer(5,5);
 }
 
 Eventloop::~Eventloop()
@@ -86,6 +90,11 @@ void Eventloop::waitEpollFd()
             {
                 handleRead();
                 doPendings();
+            }
+            else if(fd == _timerfd)
+            {
+                handleReadTime();
+                _timerfdCallBack();
             }
             else
             {
@@ -163,6 +172,36 @@ int Eventloop::createEventfd()
     return evtfd;
 }
 
+int Eventloop::createTimerfd()
+{
+    int timerfd = ::timerfd_create(CLOCK_REALTIME,0);
+    if(timerfd<0)
+    {
+        std::cerr << "timerfd" << std::endl;
+        return -1;
+    }
+    return timerfd;
+}
+
+void Eventloop::setTimerCallBack(Functor && cb)
+{
+    _timerfdCallBack = std::move(cb);
+}
+
+void Eventloop::setTimer(int initSec,int peridoSec)
+{
+    struct itimerspec newValue;
+    newValue.it_value.tv_sec = initSec;
+    newValue.it_value.tv_nsec = 0;
+    newValue.it_interval.tv_sec = peridoSec;
+    newValue.it_interval.tv_nsec = 0;
+    int ret = timerfd_settime(_timerfd,0,&newValue,nullptr);
+    if(ret)
+    {
+        std::cerr << "set timerfd error" << std::endl;
+    }
+}
+
 void Eventloop::wakeup()
 {
     uint64_t num = 1;
@@ -177,7 +216,17 @@ void Eventloop::handleRead()
     uint64_t num = 0;
     ssize_t ret = read(_evtfd,&num,sizeof(num));
     if(ret!=sizeof(num)){
-        std::cerr << "write error" << std::endl;
+        std::cerr << "read evtfd error" << std::endl;
+    }
+}
+
+void Eventloop::handleReadTime()
+{
+    uint64_t num = 0;
+    ssize_t ret = read(_timerfd,&num,sizeof(num));
+    if(ret!=sizeof(num))
+    {
+        std::cerr << "read timerfd error" << std::endl;
     }
 }
 

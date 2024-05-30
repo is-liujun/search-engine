@@ -15,6 +15,7 @@ void ThreadPool::start()
     {
         _threads.push_back(thread(&ThreadPool::doTask, this));
     }
+    initCache();
 }
 
 void ThreadPool::stop()

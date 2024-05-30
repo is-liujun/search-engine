@@ -13,6 +13,7 @@ public:
     void start();
     void stop();
     void setAllCallBack(TcpConnectionCallback &&cb1,TcpConnectionCallback &&cb2,TcpConnectionCallback &&cb3);
+    void setTimerCallBack(function<void()> &&);
 private:
     Acceptor _acceptor;
     Eventloop _event;

@@ -44,3 +44,8 @@ void Server::onMessage(const TcpConnectionPtr &ptr){
 
     _pool.addTask(std::bind(&Task::process,task));
 }
+
+void Server::setTimerCallBack(function<void()> &&cb)
+{
+    _server.setTimerCallBack(std::move(cb));
+}

@@ -18,6 +18,7 @@ public:
     void addTask(Elemtype &&cb);
     void doTask();
     Elemtype getTask();
+    void initCache();
 private:
     size_t _threadNum;
     vector<thread> _threads;

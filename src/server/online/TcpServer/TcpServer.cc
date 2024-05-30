@@ -21,3 +21,8 @@ void TcpServer::setAllCallBack(TcpConnectionCallback &&cb1,TcpConnectionCallback
     _event.setMessage(std::move(cb2));
     _event.setCloseConnection(std::move(cb3));
 }
+
+void TcpServer::setTimerCallBack(function<void()> &&cb)
+{
+    _event.setTimerCallBack(std::move(cb));
+}

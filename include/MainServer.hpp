@@ -14,6 +14,7 @@ public:
     void onConnection(const TcpConnectionPtr &ptr);
     void onMessage(const TcpConnectionPtr &ptr);
     void onClose(const TcpConnectionPtr &ptr);
+    void setTimerCallBack(function<void()> &&cb);
 private:
     TcpServer _server;
     ThreadPool _pool;

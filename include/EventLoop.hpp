@@ -33,6 +33,8 @@ public:
     void setNewConnection(TcpConnectionCallback &&);
     void setCloseConnection(TcpConnectionCallback &&);
     void setMessage(TcpConnectionCallback &&);
+    void setTimerCallBack(Functor&&);
+    void setTimer(int ,int);
     void sendToLoop(Functor &&cb);
 
 private:
@@ -41,8 +43,10 @@ private:
     void handleMessage(int fd);
     int createEpollfd();
     int createEventfd();
+    int createTimerfd();
     void wakeup();
     void handleRead();
+    void handleReadTime();
     void addEpollReadFd(int fd);
     void delEpollReadFd(int fd);
     void doPendings();
@@ -50,6 +54,7 @@ private:
 private:
     int _epfd;
     int _evtfd;
+    int _timerfd;
     bool _isloop;
     vector<struct epoll_event> _evtlist;
     Acceptor &_acceptor;
@@ -57,6 +62,7 @@ private:
     TcpConnectionCallback _newConnection;
     TcpConnectionCallback _closeConnection;
     TcpConnectionCallback _message;
+    Functor _timerfdCallBack;
     vector<Functor> _pendings;
     mutex _mutex;
 };
