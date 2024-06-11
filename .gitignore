@@ -38,3 +38,5 @@ build/
 conf/
 *.conf
 
+# datafile
+*.dat
