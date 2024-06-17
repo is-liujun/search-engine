@@ -28,7 +28,7 @@ private:
     WordSplit *_tool;
     unordered_map<int,WebPage> _pageLib;
     unordered_map<int,std::pair<int,int>> _offsetLib;
-    unordered_map<string,set<std::pair<int,double>>> _invertIndexTable;
+    unordered_map<string,map<int,double>> _invertIndexTable;
 };
     
 } // namespace SearchEngine

@@ -129,7 +129,7 @@ namespace SearchEngine
         while(getline(invertStream,word))
         {
             istringstream iss(word);
-            pair<string,set<pair<int,double>>> tmp;
+            pair<string,map<int,double>> tmp;
             iss >> tmp.first;
             int docId = 0;
             double weight = 0;
@@ -137,16 +137,19 @@ namespace SearchEngine
             {
                 tmp.second.insert({docId,weight});
             }
+            _invertIndexTable.insert(tmp);
         }
     }
 
     vector<double> WebPageQuery::getQueryWordsWeightVector(const vector<string> &queryWords)
     {
+        // 对于单独一篇文章，tf-idf算法退化为 -1*TF
         map<string, int> wordFrequency;
         for (auto &word : queryWords)
         {
             ++wordFrequency[word];
         }
+        // 进行归一化处理
         double denominator = 0;
         for (auto &item : wordFrequency)
         {
@@ -190,7 +193,7 @@ namespace SearchEngine
                 {
                     break;
                 }
-                temp.push_back(wordMap[words]);
+                temp.push_back(_invertIndexTable.at(words).at(item.second.getDocId()));
             }
             if(temp.size()==qeuryWords.size())
             {
@@ -201,13 +204,22 @@ namespace SearchEngine
         {
             return false;
         }
-        // 获取基准向量
-        auto baseQueryWordWights = getQueryWordsWeightVector(qeuryWords);
+        // // 获取基准向量
+        // //auto baseQueryWordWights = getQueryWordsWeightVector(qeuryWords);
         multimap<double, pair<int, vector<double>>, std::greater<double>> compareResult;
-        // 计算余弦值并使用map排序
+        // 计算BM25值并使用map排序
+        auto sum =  [&fileSet](int idx)->double{
+            double res = 0;
+            for(auto value:fileSet.at(idx))
+            {
+                res+=value;
+            }
+            return res;
+        };
+
         for (auto &item : fileSet)
         {
-            compareResult.insert({getCosValue(baseQueryWordWights, item.second), item});
+            compareResult.insert({sum(item.first), item});
         }
         // 按照降序输出
         for (auto &item : compareResult)

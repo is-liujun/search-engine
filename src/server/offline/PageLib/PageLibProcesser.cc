@@ -102,38 +102,46 @@ namespace SearchEngine
         vector<map<string, int>> termFrequency;
         map<string, int> documentFrequency;
         int N = _pageLib.size();
+        double docAvgLen = 0;
         // 构建文档频率
         for (int i = 0; i < N; ++i)
         {
             auto wordsMap = _pageLib[i].getWordsMap();
+            docAvgLen += _pageLib[i].getContent().size();
             termFrequency.push_back(wordsMap);
             for (auto &word : wordsMap)
             {
                 ++documentFrequency[word.first];
             }
         }
+        docAvgLen /=N;
+        int k1 = 1.5;
+        int b = 0.75;
         for (int i = 0; i < N; ++i)
         {
             auto &wordsMap = termFrequency[i];
             int id = _pageLib[i].getDocId();
-            map<string,double> weight;
+            // map<string,double> weight;
             // 归一化处理文档频率的分母
-            double denominator = 0;
+            // double denominator = 0;
             for(auto &words:wordsMap)
             {
                 int tf = words.second;
                 int df = documentFrequency[words.first];
-                double idf = log2(N/(df+1));
-                weight.insert({words.first,tf*idf});
-                denominator+=(tf*idf*tf*idf);
+                double idf = log2((N-df+0.5)/(df+0.5));
+                //计算BM25
+                double bm25 = idf*(tf*(k1+1))/(tf+k1*(1-b+b*(_pageLib[i].getContent().size()/docAvgLen)));
+                _invertIndexTable[words.first].push_back({id,bm25});
+                // weight.insert({words.first,tf*idf});
+                // denominator+=(tf*idf*tf*idf);
             }
             // 归一化处理
-            denominator = sqrt(denominator);
-            for(auto &words:weight)
-            {
-                words.second/=denominator;
-                _invertIndexTable[words.first].push_back({id,words.second});
-            }
+            // denominator = sqrt(denominator);
+            // for(auto &words:weight)
+            // {
+            //     words.second/=denominator;
+            //     _invertIndexTable[words.first].push_back({id,words.second});
+            // }
         }
     }
 
