@@ -6,6 +6,7 @@
 #include <iterator>
 #include <algorithm>
 #include <fstream>
+#include <sw/redis++/redis++.h>
 #include "json.hpp"
 #include "Configuration.hpp"
 #include "WordSplit_JieBa.hpp"
@@ -85,15 +86,32 @@ namespace SearchEngine
         }
         word.clear();
 
-        while (getline(offsetStream, word))
+        using namespace sw::redis;
+        string redisIP = Configuration::getInstence()->getConfig()["redis"];
+        Redis redisStruct(redisIP+'2');
+
+        vector<string> keys;
+        redisStruct.keys("*",std::back_inserter(keys));
+        std::cout << "keys.size() = " << keys.size()<< '\n';
+        for(auto &key:keys)
         {
-            pair<int, pair<int, int>> tmp;
-            istringstream iss(word);
-            iss >> tmp.first;
-            iss >> tmp.second.first;
-            iss >> tmp.second.second;
+            pair<int,pair<int,int>> tmp;
+            tmp.first = std::atoi(key.c_str());
+            tmp.second.first = std::atoi(redisStruct.hget(key,"start").value().c_str());
+            tmp.second.second = std::atoi(redisStruct.hget(key,"length").value().c_str());
+            
             _offsetLib.insert(tmp);
         }
+        std::cout << "offsetLib.size = " << _offsetLib.size() << '\n';
+        // while (getline(offsetStream, word))
+        // {
+        //     pair<int, pair<int, int>> tmp;
+        //     istringstream iss(word);
+        //     iss >> tmp.first;
+        //     iss >> tmp.second.first;
+        //     iss >> tmp.second.second;
+        //     _offsetLib.insert(tmp);
+        // }
         _pageLib.reserve(_offsetLib.size());
 
         for (auto &item : _offsetLib)

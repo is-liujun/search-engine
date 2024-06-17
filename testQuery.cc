@@ -70,7 +70,7 @@ void Task::process()
         }
         res += cache;
         std::cout << "query Result = " << res << '\n';
-        TransProtocol message(100, res);
+        TransProtocol message(200, res);
         _ptr->sendToLoop(message.toString());
     }
 }

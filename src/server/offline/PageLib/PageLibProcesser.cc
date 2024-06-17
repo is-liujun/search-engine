@@ -6,6 +6,8 @@
 #include <fstream>
 #include <sstream>
 
+#include <sw/redis++/redis++.h>
+
 #include "Configuration.hpp"
 
 namespace SearchEngine
@@ -138,15 +140,22 @@ namespace SearchEngine
     void PageLibProcesser::storeOnDisk()
     {
         ofstream pageStream(Configuration::getInstence()->getConfig()["NewPageLib"]);
-        ofstream offsetStream(Configuration::getInstence()->getConfig()["NewOffSetLib"]);
+        //ofstream offsetStream(Configuration::getInstence()->getConfig()["NewOffSetLib"]);
         ofstream invertIndex(Configuration::getInstence()->getConfig()["invertIndex"]);
+
+        string redisIp = Configuration::getInstence()->getConfig()["redis"];
+        using namespace sw::redis;
+        Redis redisStruct(redisIp+'2');
+        redisStruct.flushdb();
         for(size_t i=0;i<_pageLib.size();++i)
         {
             int docId = _pageLib[i].getDocId();
             int start = pageStream.tellp();
             pageStream << _pageLib[i].getText();
             int end = pageStream.tellp();
-            offsetStream << docId << ' ' << start << ' ' << end - start << '\n';
+            //offsetStream << docId << ' ' << start << ' ' << end - start << '\n';
+            vector<pair<string,int>> insertvalue({{"start",start},{"length",end-start}});
+            redisStruct.hset(std::to_string(docId),insertvalue.begin(),insertvalue.end());
         }
         for(auto &item : _invertIndexTable)
         {

@@ -46,6 +46,11 @@ void test()
         ::recv(socket_fd, str, fileSize, MSG_WAITALL);
         message = str;
         recv = message.getMessage();
+        std::cout << recv.substr(0,8) << '\n';
+        if(recv[0]=='[')
+        {    
+            recv = recv.substr(recv.find(' ')+1);
+        }
         nlohmann::json jsonObject = nlohmann::json::parse(recv);
         if (message.getTransId() == 100)
         {
