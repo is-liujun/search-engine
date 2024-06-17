@@ -132,6 +132,10 @@ namespace SearchEngine
 
     KeyWord::KeyWord()
     {
+    }
+
+    void KeyWord::loadFile()
+    {
         string dictPath = Configuration::getInstence()->getConfig()["Dict"];
         string dictIndexPath = Configuration::getInstence()->getConfig()["DictIndex"];
 

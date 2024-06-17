@@ -40,3 +40,6 @@ conf/
 
 # datafile
 *.dat
+
+# xml file
+*.xml

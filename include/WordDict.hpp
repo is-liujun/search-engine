@@ -34,7 +34,7 @@ namespace SearchEngine
 
     //private:
         // 获取一个目录下的所有文件
-        void getFiles(string type);
+        vector<string> getFiles(string path);
 
         // 读取文件名获得内容
         void buildDict(string type);
@@ -56,7 +56,7 @@ namespace SearchEngine
         unordered_map<string, set<int>> _index; // 字符出现的字典下标
         string _cnDir;                          // 存放中文路径的文件夹
         string _enDir;                          // 存放英文语料的文件夹
-        unordered_set<string> _stop_word;
+        unordered_set<string> _stop_word;       // 存放停止词
     };
 
 }

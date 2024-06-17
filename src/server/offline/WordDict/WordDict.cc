@@ -25,8 +25,8 @@ namespace SearchEngine
         string storeIndexPath = Configuration::getInstence()->getConfig()["DictIndex"];
         _cnDir = Configuration::getInstence()->getConfig()["cnDir"];
         _enDir = Configuration::getInstence()->getConfig()["enDir"];
-        getFiles("cn");
-        getFiles("en");
+        _cnFileNames = getFiles(_cnDir);
+        _enFileNames = getFiles(_enDir);
         getStopWords();
         buildDict("cn");
         buildDict("en");
@@ -45,13 +45,11 @@ namespace SearchEngine
         return _index;
     }
 
-    void WordDict::getFiles(string type)
+    vector<string> WordDict::getFiles(string path)
     {
-        vector<string> &tmp = type == "en" ? _enFileNames : _cnFileNames;
-        tmp.clear();
-        string &dir = type == "en" ? _enDir : _cnDir;
+        vector<string> tmp;
 
-        DIR *pDir = opendir(dir.c_str());
+        DIR *pDir = opendir(path.c_str());
         struct dirent *file;
         while ((file = readdir(pDir)) != nullptr)
         {
@@ -59,9 +57,10 @@ namespace SearchEngine
             {
                 continue;
             }
-            tmp.push_back(dir + '/' + file->d_name);
+            tmp.push_back(path + '/' + file->d_name);
         }
         closedir(pDir);
+        return tmp;
     }
 
     void WordDict::buildDict(string type)
@@ -81,7 +80,7 @@ namespace SearchEngine
                     {
                         string deal_word;
                         deal_word.reserve(word.size());
-                        for (char c : word)
+                        for (char &c : word)
                         {
                             if (isupper(c))
                             {
@@ -100,7 +99,7 @@ namespace SearchEngine
                         {
                             deal_word.pop_back();
                         }
-                        if (deal_word != " " && (_stop_word.find(deal_word) == _stop_word.end()))
+                        if (deal_word != " " && (_stop_word.count(deal_word) == 0))
                         {
                             ++tmpDict[deal_word];
                         }

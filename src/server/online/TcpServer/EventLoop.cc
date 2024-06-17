@@ -75,7 +75,7 @@ void Eventloop::waitEpollFd()
     }
     else
     {
-        if (nready == _evtlist.size())
+        if (nready == (int)_evtlist.size())
         {
             _evtlist.resize(2 * nready);
         }

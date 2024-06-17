@@ -14,6 +14,7 @@ namespace SearchEngine
     public:
         static KeyWord* getInstence();
         static void destroy();
+        void loadFile();
         vector<string> query(string word);
 
     private:

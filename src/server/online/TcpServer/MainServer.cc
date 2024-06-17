@@ -39,7 +39,7 @@ void Server::onClose(const TcpConnectionPtr &ptr){
 
 void Server::onMessage(const TcpConnectionPtr &ptr){
     string msg =  ptr->receive();
-    std::cout << "Server receive: " << msg << std::endl;
+    std::cout << "Server receive: " << msg.size() << std::endl;
     Task task(msg,ptr);
 
     _pool.addTask(std::bind(&Task::process,task));

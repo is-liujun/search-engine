@@ -68,7 +68,7 @@ CacheManager<Key, Value>::~CacheManager()
 template <class Key, class Value>
 void CacheManager<Key, Value>::initCache(thread_id id, size_t capacity)
 {
-    _caches.insert({id, Cache<string, vector<string>>(capacity)});
+    _caches.insert({id, Cache<Key, Value>(capacity)});
 }
 
 template <class Key, class Value>

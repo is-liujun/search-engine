@@ -18,7 +18,7 @@ TcpConnection::~TcpConnection() {}
 
 void TcpConnection::send(const string &msg)
 {
-    _sockIO.writen(msg.c_str(), msg.length());
+    _sockIO.writen(msg);
 }
 
 void TcpConnection::sendToLoop(const string &msg)
@@ -32,9 +32,7 @@ void TcpConnection::sendToLoop(const string &msg)
 
 string TcpConnection::receive()
 {
-    char buf[1024] = {0};
-    _sockIO.readLine(buf, sizeof(buf));
-    return string(buf);
+    return _sockIO.readn();
 }
 
 string TcpConnection::toString()
