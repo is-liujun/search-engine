@@ -49,7 +49,7 @@ void Task::process()
         {
             res += (word + " ");
         }
-        res[res.size() - 1] = '\0';
+        res.pop_back();
         std::cout << "query Result = " << res << '\n';
         nlohmann::json jsonObject;
         jsonObject["res"] = res;
@@ -77,19 +77,42 @@ void Task::process()
 
 struct Sync
 {
-    Sync(function<void()> functor1, function<void()> functor2)
-        : _functor1(functor1), _functor2(functor2)
+    Sync()
+        : _sync(&Sync::threadFunc,this)
     {
     }
 
-    void operator()()
+    ~Sync()
     {
-        _functor1();
-        _functor2();
+        _sync.join();
     }
 
+    void setCallBack(function<void()> func1, function<void()> func2)
+    {
+        _functor1 = func1;
+        _functor2 = func2;
+    }
+
+    void isTime()
+    {
+        _istime.notify_all();
+    }
+
+    void threadFunc()
+    {
+        std::unique_lock<mutex> um(_nothing);
+        while (1)
+        {
+            _istime.wait(um);
+            _functor1();
+            _functor2();
+        }
+    }
     function<void()> _functor1;
     function<void()> _functor2;
+    thread _sync;
+    mutex _nothing;
+    condition_variable _istime;
 };
 
 void test()
@@ -98,9 +121,10 @@ void test()
     int port = std::stoi(SearchEngine::Configuration::getInstence()->getConfig()["port"]);
     SearchEngine::WebPageQuery::getInstence()->loadLibrary();
     SearchEngine::KeyWord::getInstence()->loadFile();
-    Sync sync(std::bind(&CacheManager<string, vector<string>>::sync, CacheManager<string, vector<string>>::getInstence()), std::bind(&CacheManager<string, string>::sync, CacheManager<string, string>::getInstence()));
+    Sync sync;
+    sync.setCallBack(std::bind(&CacheManager<string, vector<string>>::sync, CacheManager<string, vector<string>>::getInstence()), std::bind(&CacheManager<string, string>::sync, CacheManager<string, string>::getInstence()));
     Server server(ip, port, 4, 10);
-    server.setTimerCallBack(sync);
+    server.setTimerCallBack(std::bind(&Sync::isTime, &sync));
     server.start();
 }
 int main()

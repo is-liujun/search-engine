@@ -27,7 +27,7 @@ private:
 
 private:
     static CacheManager *_pInstence;
-    unordered_map<thread_id, Cache<Key,Value>> _caches;
+    unordered_map<thread_id, Cache<Key, Value>> _caches;
     bool _isSync;
 };
 
@@ -89,41 +89,26 @@ template <class Key, class Value>
 void CacheManager<Key, Value>::sync()
 {
     std::cout << "start to sync" << std::endl;
-    // 选取主键pair<thread_id,Cache>
-    auto mainCache = _caches.begin();
-    // 加锁并将第一个cache复制到第二个cache
-    mainCache->second.copyCache();
-    auto &syncCache = mainCache->second.getSyncCache();
-
-    // 将其他线程的修改同步到主键的第二个cache
-    for (auto &cache : _caches)// pair<thread_id,Cache>
-    {
-        //跳过遍历主键
-        if(cache.first == mainCache->first)
-        {
-            continue;
-        }
-        auto pendingList = cache.second.getList();
-        for(auto &item:pendingList)
-        {
-            std::cout<<"sync cache first = "<<item.first<< '\n';
-            syncCache.push_back({item.first,item.second});
-        }
-    }
-
-    // 将主键的第二个cache修改同步到其他线程。
+    Cache<Key, Value> tmp(_caches.size());
     for (auto &cache : _caches)
     {
-        //跳过遍历主键
-        if(cache.first == mainCache->first)
+        if (!cache.second.empty())
         {
-            continue;
+            auto first = cache.second.getList();
+            for (auto &pair : first)
+            {
+                std::cout << "cache.first() = " << pair.first << std::endl;
+                tmp.put(pair.first, pair.second);
+            }
         }
-        auto &otherSyncCache = cache.second.getSyncCache();
-        otherSyncCache = syncCache;
-        cache.second.swapCache();
     }
-    mainCache->second.swapCache();
+
+    for (auto &cache : _caches)
+    {
+        cache.second.startSync();
+        cache.second = tmp;
+        cache.second.endSync();
+    }
 }
 
 #endif

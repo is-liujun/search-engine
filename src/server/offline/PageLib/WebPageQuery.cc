@@ -212,6 +212,8 @@ namespace SearchEngine
 
     string WebPageQuery::returnNoAnswer()
     {
-        return "404 Not Found";
+        nlohmann::json jsonObject;
+        jsonObject["res"] = "404 Not Found";
+        return jsonObject.dump();
     }
 }

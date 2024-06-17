@@ -8,35 +8,39 @@
 #include <utility>
 #include <unordered_map>
 
-using std::string;
-using std::vector;
 using std::list;
 using std::pair;
+using std::string;
 using std::unordered_map;
+using std::vector;
 
-template<class Key,class Value>
+template <class Key, class Value>
 class Cache
 {
 public:
     Cache(size_t cacheSize);
     Value get(Key key);
-    void put(Key key,Value value);
-    const list<pair<Key,Value>> &get();
+    void put(Key key, Value value);
+    const list<pair<Key, Value>> getList();
     bool empty();
     void startSync();
     void endSync();
-    void operator=(Cache &);
+    void swapCache();
+    list<pair<Key, Value>> &getSyncCache();
+    void copyCache();
+
 private:
     size_t _capacity;
     bool _isSync;
-    bool _isChange;
-    list<pair<Key,Value>> _cache;
-    unordered_map<Key,typename list<pair<Key,Value>>::iterator> _idx;
+    list<pair<Key, Value>> _cache;
+    list<pair<Key, Value>> _cacheSync;
+    list<pair<Key, Value>> _pendingList;
+    unordered_map<Key, typename list<pair<Key, Value>>::iterator> _idx;
 };
 
 template <class Key, class Value>
 Cache<Key, Value>::Cache(size_t cacheSize)
-    : _capacity(cacheSize),_isSync(0),_isChange(0)
+    : _capacity(cacheSize), _isSync(0)
 {
 }
 
@@ -48,26 +52,27 @@ Value Cache<Key, Value>::get(Key key)
     {
         auto &it_cache = it->second;
         _cache.splice(_cache.begin(), _cache, it_cache);
-        _isChange = true;
         return it_cache->second;
     }
     return Value();
-
 }
 
-template<class Key,class Value>
-const list<pair<Key,Value>> & Cache<Key,Value>::get()
+template <class Key, class Value>
+const list<pair<Key, Value>> Cache<Key, Value>::getList()
 {
-    return _cache;
+    auto tmp = _pendingList;
+    _pendingList.clear();
+    return tmp;
 }
 
 template <class Key, class Value>
 void Cache<Key, Value>::put(Key key, Value value)
 {
-    if(_isSync)
+    if (_isSync)
     {
         return;
     }
+    _pendingList.push_back({key, value});
     auto it = _idx.find(key);
     if (it != _idx.end())
     {
@@ -90,38 +95,51 @@ void Cache<Key, Value>::put(Key key, Value value)
             _idx[key] = _cache.begin();
         }
     }
-    _isChange = 1;
 }
 
-template<class Key,class Value>
-bool Cache<Key,Value>::empty()
+template <class Key, class Value>
+bool Cache<Key, Value>::empty()
 {
     return _cache.empty();
 }
 
-template<class Key,class Value>
-void Cache<Key,Value>::startSync()
+template <class Key, class Value>
+void Cache<Key, Value>::startSync()
 {
     _isSync = true;
 }
 
-template<class Key,class Value>
-void Cache<Key,Value>::endSync()
+template <class Key, class Value>
+void Cache<Key, Value>::endSync()
 {
     _isSync = false;
-    _isChange = 0;
 }
 
-template<class Key,class Value>
-void Cache<Key,Value>::operator=(Cache<Key,Value> & rhs)
+template <class Key, class Value>
+void Cache<Key, Value>::copyCache()
 {
-    _capacity = rhs._capacity;
-    _cache = rhs._cache;
+    _isSync = 1;
+    _cacheSync = _cache;
+    _isSync = 0;
+}
+
+template <class Key, class Value>
+list<pair<Key, Value>> &Cache<Key, Value>::getSyncCache()
+{
+    return _cacheSync;
+}
+
+template <class Key, class Value>
+void Cache<Key, Value>::swapCache()
+{
+    _isSync = 1;
+    std::swap(_cache, _cacheSync);
     _idx.clear();
-    for(auto it = _cache.begin();it!=_cache.end();++it)
+    for (auto it = _cache.begin(); it != _cache.end(); ++it)
     {
         _idx[(*it).first] = it;
     }
+    _isSync = 0;
 }
 
 #endif

@@ -28,35 +28,44 @@ void test()
     while (1)
     {
         int transId = 1;
-        std::cout << "请输入要查询的选项: 1为关键词, 2为网页查询"<< '\n';
-        std::cin >>transId;
-        std::cout << "请输入要查询的内容: "<< '\n';
+        std::cout << "请输入要查询的选项: 1为关键词, 2为网页查询" << '\n';
+        std::cin >> transId;
+        std::cout << "请输入要查询的内容: " << '\n';
         std::cin >> recv;
         std::cout << ">> " << recv << '\n';
         TransProtocol message(transId, recv);
         std::string toSend = message.toString();
-        ::send(socket_fd, toSend.c_str(), toSend.size(), MSG_WAITALL);
+        ::send(socket_fd, toSend.c_str(), toSend.size(), MSG_NOSIGNAL);
         std::cout << "send: " << toSend.substr(8) << '\n';
         recv.clear();
         int fileSize = 0;
-        ::recv(socket_fd, &fileSize, sizeof(int), MSG_NOSIGNAL);
+        ::recv(socket_fd, &fileSize, sizeof(int), MSG_WAITALL);
         std::cout << "recvSize = " << fileSize << '\n';
         char str[fileSize + 1];
         str[fileSize] = '\0';
-        ::recv(socket_fd, str, fileSize, MSG_NOSIGNAL);
+        ::recv(socket_fd, str, fileSize, MSG_WAITALL);
         message = str;
         recv = message.getMessage();
         nlohmann::json jsonObject = nlohmann::json::parse(recv);
-        if(message.getTransId()==100)
+        if (message.getTransId() == 100)
         {
             std::cout << jsonObject["res"] << '\n';
         }
-        else if(message.getTransId()==200)
-        {for (auto &item : jsonObject)
+        else if (message.getTransId() == 200)
         {
-            std::cout << "recv: title :" << item["title"] << '\n'
-            << "content: "<< item["content"] << '\n';
-        }}
+            for (auto &item : jsonObject)
+            {
+                if (item.is_string())
+                {
+                    std::cout << "recv " << item << '\n';
+                }
+                else
+                {
+                    std::cout << "recv: title :" << item["title"] << '\n'
+                              << "content: " << item["content"] << '\n';
+                }
+            }
+        }
     }
 }
 
