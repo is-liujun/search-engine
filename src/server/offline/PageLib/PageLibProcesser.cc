@@ -25,6 +25,7 @@ namespace SearchEngine
         delete _tool;
     }
 
+    /// @brief 加载格式化的文档进行去重并建立倒排索引
     void PageLibProcesser::doProcess()
     {
         readInfoFromfile();
@@ -33,6 +34,7 @@ namespace SearchEngine
         storeOnDisk();
     }
 
+    /// @brief 从硬盘中加载文件
     void PageLibProcesser::readInfoFromfile()
     {
         MyLog::LogInfo("SearchEngine::PageLibProcesser::readInfoFromfile start\n");
@@ -81,6 +83,7 @@ namespace SearchEngine
         }
     }
 
+    /// @brief 按照WebPage的相等以及比较算法对加载的文章进行去重
     void PageLibProcesser::curRedundantPages()
     {
         MyLog::LogInfo("SearchEngine::PageLibProcesser::curRedundantPages start\n");
@@ -96,6 +99,7 @@ namespace SearchEngine
         }
     }
 
+    /// @brief 按照BM25算法生成每个词语的文章权重并进行保存
     void PageLibProcesser::buildinvertIndexTable()
     {
         MyLog::LogInfo("SearchEngine::PageLibProcesser::buildinvertIndexTable start\n");
@@ -145,6 +149,7 @@ namespace SearchEngine
         }
     }
 
+    /// @brief 将生成的网页库以及倒排索引库保存到硬盘中
     void PageLibProcesser::storeOnDisk()
     {
         MyLog::LogInfo("SearchEngine::PageLibProcesser::storeOnDisk start\n");

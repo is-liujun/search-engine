@@ -33,6 +33,10 @@ namespace SearchEngine
         return this->_value < rhs._value;
     }
 
+
+    /// @brief 该函数是为了区分单字节的英文字符和多字节的utf-8汉字字符
+    /// @param ch 英文字符或者汉字的首个字节
+    /// @return 返回值为utf-8或者英文字符的所占字节数
     static size_t charSize(const char ch)
     {
         int byteNum = 0;
@@ -45,6 +49,10 @@ namespace SearchEngine
         }
         return byteNum == 0 ? 1 : byteNum;
     }
+
+    /// @brief 该函数是为了将一段中英文混合的string短语转化为单个汉字或者单个字母的string数组
+    /// @param word 需要进行分割的string短语
+    /// @return 由单字或者字母组成的string数组
     static vector<string> trans(const string &word)
     {
         vector<string> res;
@@ -58,6 +66,10 @@ namespace SearchEngine
         return res;
     }
 
+    /// @brief 该函数是为了求出从word转化为dictword所需要的最小编辑距离
+    /// @param word 待转化的短语
+    /// @param dictWord 目标短语
+    /// @return 返回最小的编辑距离
     int KeyWord::Cmp::editDistence(const string &word, const string &dictWord)
     {
         vector<string> word1 = trans(word);
@@ -135,6 +147,7 @@ namespace SearchEngine
     {
     }
 
+    /// @brief 从磁盘文件中读取目标文件内容加载到内存中
     void KeyWord::loadFile()
     {
         string dictPath = Configuration::getInstence()->getConfig()["Dict"];
@@ -163,6 +176,9 @@ namespace SearchEngine
         }
     }
 
+    /// @brief 进行关键词推荐查询
+    /// @param word 需要进行查询的关键词
+    /// @return 与关键词最接近的几个词语
     vector<string> KeyWord::query(string word)
     {
         vector<string> cutWord = trans(word);
@@ -242,6 +258,7 @@ namespace SearchEngine
             }
         }
         reverse(cutWord.begin(), cutWord.end());
+        MyLog::LogInfo("SearchEngine::KeyWord::query word result num = %d\n",cutWord.size());
         return cutWord;
     }
 

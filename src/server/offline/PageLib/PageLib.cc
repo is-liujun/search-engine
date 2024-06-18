@@ -20,6 +20,9 @@ namespace SearchEngine
 
     PageLib::~PageLib() {}
 
+    /// @brief 判断一段文本是否全部有空白组成
+    /// @param str 待检测短语
+    /// @return true代表全部由空字符组成，false代表不全为空
     static bool isSpace(string &str)
     {
         for(auto &ch : str)
@@ -32,6 +35,9 @@ namespace SearchEngine
         return true;
     }
 
+    /// @brief 去掉一段文本中的全部html标签
+    /// @param text 待去标签文本
+    /// @return 返回去除文本后的标签
     static string removeLabel(string text)
     {
         string patt = "<([^/][\u4e00-\u9fa5\\w\\n ,!()+：@#;%?\":/.=-]*|/[\\w]*)>";
@@ -80,6 +86,7 @@ namespace SearchEngine
         return ret;
     }
 
+    /// @brief 从磁盘加载未处理的xml格式的文档并进行格式化
     void PageLib::create()
     {
         string xmlDir = Configuration::getInstence()->getConfig()["XmlFile"];
@@ -125,6 +132,7 @@ namespace SearchEngine
             }
         }
     }
+    /// @brief 将格式化完成的文档存入磁盘
     void PageLib::store()
     {
         MyLog::LogInfo("SearchEngine::PageLib::store start\n");

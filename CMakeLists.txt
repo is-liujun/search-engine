@@ -34,23 +34,15 @@ add_executable(server ${KEY} ${OLDPAGE} ${WORDCUT} ${TCPSERVER} ${PROTOCOL} ${CO
 add_executable(redisServer ${KEY} ${OLDPAGE} ${WORDCUT} ${TCPSERVER} ${PROTOCOL} ${CONFIG} ${LOG} testRedisQuery.cc)
 
 find_library(HIREDIS_LIB hiredis)
-target_link_libraries(redisServer PUBLIC ${HIREDIS_LIB})
-target_link_libraries(pagelib PUBLIC ${HIREDIS_LIB})
-target_link_libraries(queryPage PUBLIC ${HIREDIS_LIB})
-target_link_libraries(server PUBLIC ${HIREDIS_LIB})
 
 find_library(REDIS_PLUS_PLUS_LIB redis++)
-target_link_libraries(redisServer PUBLIC ${REDIS_PLUS_PLUS_LIB})
-target_link_libraries(pagelib PUBLIC ${REDIS_PLUS_PLUS_LIB})
-target_link_libraries(queryPage PUBLIC ${REDIS_PLUS_PLUS_LIB})
-target_link_libraries(server PUBLIC ${REDIS_PLUS_PLUS_LIB})
 
 find_library(LOG4CPP log4cpp)
 target_link_libraries(keyWord PUBLIC ${LOG4CPP})
-target_link_libraries(redisServer PUBLIC ${LOG4CPP})
-target_link_libraries(pagelib PUBLIC ${LOG4CPP})
-target_link_libraries(queryPage PUBLIC ${LOG4CPP})
-target_link_libraries(server PUBLIC ${LOG4CPP})
+target_link_libraries(redisServer PUBLIC ${HIREDIS_LIB} ${REDIS_PLUS_PLUS_LIB} ${LOG4CPP})
+target_link_libraries(pagelib PUBLIC ${HIREDIS_LIB} ${REDIS_PLUS_PLUS_LIB} ${LOG4CPP})
+target_link_libraries(queryPage PUBLIC ${HIREDIS_LIB} ${REDIS_PLUS_PLUS_LIB} ${LOG4CPP})
+target_link_libraries(server PUBLIC ${HIREDIS_LIB} ${REDIS_PLUS_PLUS_LIB} ${LOG4CPP})
 
 add_executable(client ${PROTOCOL} src/client/client.cc)
 # set_target_properties(wordDict PROPERTIES

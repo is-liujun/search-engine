@@ -52,6 +52,9 @@ namespace SearchEngine
         }
     }
 
+    /// @brief 对传入语句进行网页搜索并返回json格式化字符串
+    /// @param str 待查询短语
+    /// @return json格式化后的网页查询结果
     string WebPageQuery::doQuery(const string &str)
     {
         MyLog::LogInfo("SearchEngine::WebPageQuery::doQuery: queryWord is [%s]\n",str.c_str());
@@ -67,6 +70,7 @@ namespace SearchEngine
         return res?createJson(resultVec):returnNoAnswer();
     }
 
+    /// @brief 从硬盘中加载处理好的网页库以及倒排索引库
     void WebPageQuery::loadLibrary()
     {
         ifstream pageStream(Configuration::getInstence()->getConfig()["NewPageLib"]);
@@ -91,7 +95,7 @@ namespace SearchEngine
         using namespace sw::redis;
         string redisIP = Configuration::getInstence()->getConfig()["redis"];
         Redis redisStruct(redisIP+'2');
-
+        MyLog::LogInfo("SearchEngine::WebPageQuery::loadLibrary create RedisConnection: %s\n",(redisIP+'2').c_str());
         vector<string> keys;
         redisStruct.keys("*",std::back_inserter(keys));
         std::cout << "keys.size() = " << keys.size()<< '\n';
@@ -144,6 +148,9 @@ namespace SearchEngine
         MyLog::LogDebug("_pageLib.size = %d , _offSetLib.size = %d , _invertIndexTable.size = %d\n",_pageLib.size(),_offsetLib.size(),_invertIndexTable.size());
     }
 
+    /// @brief 将传入的queryWords生成对应本篇文章的权重值
+    /// @param queryWords 需要生成权重的文本数组
+    /// @return 单个词语对本句话的权重值数组
     vector<double> WebPageQuery::getQueryWordsWeightVector(const vector<string> &queryWords)
     {
         // 对于单独一篇文章，tf-idf算法退化为 -1*TF
@@ -165,6 +172,10 @@ namespace SearchEngine
         }
         return res;
     }
+    /// @brief 生成两个向量的余弦值
+    /// @param lhs 一个向量值
+    /// @param rhs 一个向量值
+    /// @return 两个向量的余弦值
     static double getCosValue(const vector<double> &lhs, const vector<double> &rhs)
     {
         double lhsDenominator = 0;
@@ -180,11 +191,14 @@ namespace SearchEngine
     }
 
 
+    /// @brief 传入查询单词数组并将获得的文章id存入数组中
+    /// @param qeuryWords 待查询单词数组
+    /// @param resultVec 查询结果集
+    /// @return 是否有结果
     bool WebPageQuery::executeQuery(const vector<string> &qeuryWords, vector<int> &resultVec)
     {
-        /*获取第0个单词的所有文章列表
-        ，一边在这个文章的词频中查找剩余的词一边构建这个文章所对应的向量
-        ，如果有一个没找到就放弃这篇文章。*/
+        /*遍历所有文章列表，一边在这个文章的词频中查找查询词一边构建这个文章所对应的向量
+        ，如果有一个单词没有找到就放弃这篇文章。*/
         map<int, vector<double>> fileSet;
         for(auto &item:_pageLib)
         {
@@ -211,7 +225,7 @@ namespace SearchEngine
         // // 获取基准向量
         // //auto baseQueryWordWights = getQueryWordsWeightVector(qeuryWords);
         multimap<double, pair<int, vector<double>>, std::greater<double>> compareResult;
-        // 计算BM25值并使用map排序
+        // 计算文章所对应的BM25值并使用map排序
         auto sum =  [&fileSet](int idx)->double{
             double res = 0;
             for(auto value:fileSet.at(idx))
@@ -234,6 +248,9 @@ namespace SearchEngine
         return true;
     }
 
+    /// @brief 按传入的文章id顺序将文章的标题和内容封装成json格式字符串
+    /// @param docIdVec 文章id的集合
+    /// @return json格式的字符串
     string WebPageQuery::createJson(vector<int> &docIdVec)
     {
         nlohmann::json jsonObject;
@@ -245,6 +262,8 @@ namespace SearchEngine
         return jsonObject.dump();
     }
 
+    /// @brief 查询没有结果时返回的内容
+    /// @return 返回无结果的json格式字符串
     string WebPageQuery::returnNoAnswer()
     {
         nlohmann::json jsonObject;

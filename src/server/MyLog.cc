@@ -56,6 +56,7 @@ Mylogger* Mylogger::getInstance()
     if( _mlog==nullptr )
     {
         _mlog = new Mylogger();
+        atexit(destroy);
     }
     return _mlog;
 }
