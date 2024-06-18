@@ -43,3 +43,6 @@ conf/
 
 # xml file
 *.xml
+
+# log file
+*.log

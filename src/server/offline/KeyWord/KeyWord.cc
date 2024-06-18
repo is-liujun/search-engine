@@ -5,6 +5,7 @@
 #include <sstream>
 #include <functional>
 
+#include "MyLog.hpp"
 #include "Configuration.hpp"
 
 using std::ifstream;
@@ -165,7 +166,7 @@ namespace SearchEngine
     vector<string> KeyWord::query(string word)
     {
         vector<string> cutWord = trans(word);
-
+        MyLog::LogInfo("SearchEngine::KeyWord::query word = %s\n",word.c_str());
         priority_queue<Cmp, vector<Cmp>, Less> cnQue;
         priority_queue<Cmp, vector<Cmp>, Less> enQue;
         set<int> cnIndexList;

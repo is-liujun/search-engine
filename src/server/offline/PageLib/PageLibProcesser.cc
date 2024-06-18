@@ -7,7 +7,7 @@
 #include <sstream>
 
 #include <sw/redis++/redis++.h>
-
+#include "MyLog.hpp"
 #include "Configuration.hpp"
 
 namespace SearchEngine
@@ -35,7 +35,7 @@ namespace SearchEngine
 
     void PageLibProcesser::readInfoFromfile()
     {
-        std::cout << "readInfoFromfile" << '\n';
+        MyLog::LogInfo("SearchEngine::PageLibProcesser::readInfoFromfile start\n");
         string pageLib = Configuration::getInstence()->getConfig()["PageLib"];
         string offsetLib = Configuration::getInstence()->getConfig()["OffSetLib"];
         string cnstopFile = Configuration::getInstence()->getConfig()["cnStopFile"];
@@ -83,7 +83,7 @@ namespace SearchEngine
 
     void PageLibProcesser::curRedundantPages()
     {
-        std::cout << "curRedundantPages" << '\n';
+        MyLog::LogInfo("SearchEngine::PageLibProcesser::curRedundantPages start\n");
         set<WebPage> unmuti;
         for (size_t i = 0; i < _pageLib.size(); ++i)
         {
@@ -98,7 +98,7 @@ namespace SearchEngine
 
     void PageLibProcesser::buildinvertIndexTable()
     {
-        std::cout << "buildinvertIndexTable" << '\n';
+        MyLog::LogInfo("SearchEngine::PageLibProcesser::buildinvertIndexTable start\n");
         vector<map<string, int>> termFrequency;
         map<string, int> documentFrequency;
         int N = _pageLib.size();
@@ -147,13 +147,14 @@ namespace SearchEngine
 
     void PageLibProcesser::storeOnDisk()
     {
+        MyLog::LogInfo("SearchEngine::PageLibProcesser::storeOnDisk start\n");
         ofstream pageStream(Configuration::getInstence()->getConfig()["NewPageLib"]);
-        //ofstream offsetStream(Configuration::getInstence()->getConfig()["NewOffSetLib"]);
         ofstream invertIndex(Configuration::getInstence()->getConfig()["invertIndex"]);
 
         string redisIp = Configuration::getInstence()->getConfig()["redis"];
         using namespace sw::redis;
         Redis redisStruct(redisIp+'2');
+        MyLog::LogInfo("SearchEngine::PageLibProcesser::readInfoFromfile create RedisConnection: %s\n",(redisIp+'2').c_str());
         redisStruct.flushdb();
         for(size_t i=0;i<_pageLib.size();++i)
         {
@@ -161,7 +162,6 @@ namespace SearchEngine
             int start = pageStream.tellp();
             pageStream << _pageLib[i].getText();
             int end = pageStream.tellp();
-            //offsetStream << docId << ' ' << start << ' ' << end - start << '\n';
             vector<pair<string,int>> insertvalue({{"start",start},{"length",end-start}});
             redisStruct.hset(std::to_string(docId),insertvalue.begin(),insertvalue.end());
         }

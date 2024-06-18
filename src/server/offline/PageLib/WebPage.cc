@@ -101,16 +101,23 @@ namespace SearchEngine
     {
         set<string> left(lhs._topWords.begin(), lhs._topWords.end());
         set<string> right(rhs._topWords.begin(), rhs._topWords.end());
-        left.insert(right.begin(), right.end());
-        return left.size() <= WebPage::TOPK_NUMBER + 2;
+        int countNum = 0;
+        for(auto &word:left)
+        {
+            if(right.count(word))
+            {
+                ++countNum;
+            }
+        }
+        return countNum>=8;
     }
 
     bool operator<(const WebPage &lhs, const WebPage &rhs)
     {
-        if (lhs._docContent.size() != rhs._docContent.size())
-        {
-            return lhs._docContent.size() < rhs._docContent.size();
-        }
+        // if (lhs._docContent.size() != rhs._docContent.size())
+        // {
+        //     return lhs._docContent.size() < rhs._docContent.size();
+        // }
         return lhs._docId < rhs._docId;
     }
 }

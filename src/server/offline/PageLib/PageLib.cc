@@ -5,6 +5,7 @@
 #include <fstream>
 #include <regex>
 
+#include "MyLog.hpp"
 #include "Configuration.hpp"
 #include "tinyxml2.hpp"
 
@@ -86,7 +87,7 @@ namespace SearchEngine
         vector<string> fileList = _dirScanner.getFiles();
         for (string filename : fileList)
         {
-            std::cout << filename << '\n';
+            MyLog::LogInfo("SearchEngine::PageLib::create(): open filename = %s\n",filename.c_str());
             using namespace tinyxml2;
             XMLDocument doc;
             doc.LoadFile(filename.c_str());
@@ -109,7 +110,7 @@ namespace SearchEngine
                         {
                             item.link = elem->ToElement()->GetText();
                         }
-                        if ("description" == label)
+                        if ("content" == label)
                         {
                             item.content = removeLabel(elem->ToElement()->GetText());
                         }
@@ -126,6 +127,7 @@ namespace SearchEngine
     }
     void PageLib::store()
     {
+        MyLog::LogInfo("SearchEngine::PageLib::store start\n");
         using namespace tinyxml2;
         ofstream ofsPage(Configuration::getInstence()->getConfig()["PageLib"]);
         ofstream ofsOffset(Configuration::getInstence()->getConfig()["OffSetLib"]);

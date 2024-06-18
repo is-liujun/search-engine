@@ -8,6 +8,7 @@
 #include <fstream>
 #include <sw/redis++/redis++.h>
 #include "json.hpp"
+#include "MyLog.hpp"
 #include "Configuration.hpp"
 #include "WordSplit_JieBa.hpp"
 
@@ -53,6 +54,7 @@ namespace SearchEngine
 
     string WebPageQuery::doQuery(const string &str)
     {
+        MyLog::LogInfo("SearchEngine::WebPageQuery::doQuery: queryWord is [%s]\n",str.c_str());
         auto queryWords = _tool->cut(str);
         for(size_t idx = 0;idx<queryWords.size();++idx)
         {
@@ -61,7 +63,7 @@ namespace SearchEngine
         std::cout << '\n';
         vector<int> resultVec;
         bool res = executeQuery(queryWords,resultVec);
-        std::cout << "query result is " << resultVec.size() <<'\n';
+        MyLog::LogDebug("query result size is %d\n",resultVec.size());
         return res?createJson(resultVec):returnNoAnswer();
     }
 
@@ -139,6 +141,7 @@ namespace SearchEngine
             }
             _invertIndexTable.insert(tmp);
         }
+        MyLog::LogDebug("_pageLib.size = %d , _offSetLib.size = %d , _invertIndexTable.size = %d\n",_pageLib.size(),_offsetLib.size(),_invertIndexTable.size());
     }
 
     vector<double> WebPageQuery::getQueryWordsWeightVector(const vector<string> &queryWords)
@@ -200,6 +203,7 @@ namespace SearchEngine
                 fileSet.insert({item.second.getDocId(),temp});
             }
         }
+        MyLog::LogDebug("executeQuery: fileSet.size = %d\n",fileSet.size());
         if (fileSet.empty())
         {
             return false;
@@ -225,6 +229,7 @@ namespace SearchEngine
         for (auto &item : compareResult)
         {
             resultVec.push_back(item.second.first);
+            MyLog::LogDebug("executeQuery: docId = %d , BM25 = %.3f\n",item.second.first,item.first);
         }
         return true;
     }
