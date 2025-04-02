@@ -24,7 +24,7 @@ void TcpConnection::send(const string &msg)
 void TcpConnection::sendToLoop(const string &msg)
 {
     if(_loop)
-    {
+    { //每一个client连接时，都会创建一个TcpConnection，保存_fd等信息；
         _loop->sendToLoop(std::bind(&TcpConnection::send,this,msg));
         
     }

@@ -91,15 +91,15 @@ namespace SearchEngine
     {
         string xmlDir = Configuration::getInstence()->getConfig()["XmlFile"];
         _dirScanner.scan(xmlDir);
-        vector<string> fileList = _dirScanner.getFiles();
+        vector<string> fileList = _dirScanner.getFiles(); //获取../data/xmlFile目录下所有的绝对路径文件名；
         for (string filename : fileList)
         {
             MyLog::LogInfo("SearchEngine::PageLib::create(): open filename = %s\n",filename.c_str());
-            using namespace tinyxml2;
+            using namespace tinyxml2; //利用第三方库，读取xml格式信息；；；
             XMLDocument doc;
             doc.LoadFile(filename.c_str());
             XMLNode *node = doc.FirstChild()->NextSibling()->FirstChild()->FirstChild();
-            while (node)
+            while (node) //不断的在xml文件中，找<item>标签，提取出title、link、description信息组成一个RssItem网页对象实例；
             {
                 string name = node->Value();
                 if ("item" == name)
@@ -117,13 +117,13 @@ namespace SearchEngine
                         {
                             item.link = elem->ToElement()->GetText();
                         }
-                        if ("content" == label)
+                        if ("content" == label || "description" == label) //有的标签是content、有的是description
                         {
                             item.content = removeLabel(elem->ToElement()->GetText());
                         }
                     }
                     _items.push_back(item);
-                    if(isSpace(_items.back().content))
+                    if(isSpace(_items.back().content)) //如果没有content或者description的，把这个网页实例删掉；
                     {
                         _items.pop_back();
                     }
@@ -132,15 +132,16 @@ namespace SearchEngine
             }
         }
     }
-    /// @brief 将格式化完成的文档存入磁盘
+
+    /// 将内存中的_items数组，重新序列化为XML格式并存储到PageLib文件中；同时记录每一个网页的起始位置和大小信息；
     void PageLib::store()
     {
         MyLog::LogInfo("SearchEngine::PageLib::store start\n");
-        using namespace tinyxml2;
-        ofstream ofsPage(Configuration::getInstence()->getConfig()["PageLib"]);
+        using namespace tinyxml2; //使用 tinyxml2 库动态创建XML节点
+        ofstream ofsPage(Configuration::getInstence()->getConfig()["PageLib"]); //打开文件流；
         ofstream ofsOffset(Configuration::getInstence()->getConfig()["OffSetLib"]);
 
-        for (size_t i = 0; i < _items.size(); ++i)
+        for (size_t i = 0; i < _items.size(); ++i) //遍历所有的vector<RssItem> _items;网页实例
         {
             XMLDocument newDoc;
             XMLNode *root = newDoc.InsertEndChild(newDoc.NewElement("doc"));
@@ -154,13 +155,13 @@ namespace SearchEngine
             content->ToElement()->SetText(_items[i].content.c_str());
             XMLPrinter printer;
             newDoc.Print(&printer);
-            string text = printer.CStr();
-            _pages.push_back(text);
+            string text = printer.CStr(); //把XML文档转换成string
+            _pages.push_back(text); //遍历每一个RssItem网页实例，再放入vector<string> _pages;
+
             size_t pos = ofsPage.tellp();
-            
-            ofsPage << text ;
+            ofsPage << text ; //把新形成的text写入pageLib.dat中；
             size_t newPos = ofsPage.tellp();
-            _offsetLib[i + 1] = {pos, newPos-pos};
+            _offsetLib[i + 1] = {pos, newPos-pos}; //计算网页实例id 和对应的起始位置，文件长度；map<int, pair<int, int>> _offsetLib; 
             ofsOffset << i + 1 << ' ' << _offsetLib[i + 1].first << ' ' << _offsetLib[i + 1].second << '\n';
         }
     }

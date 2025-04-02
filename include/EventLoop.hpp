@@ -58,7 +58,7 @@ private:
     bool _isloop;
     vector<struct epoll_event> _evtlist;
     Acceptor &_acceptor;
-    map<int, TcpConnectionPtr> _conns;
+    map<int, TcpConnectionPtr> _conns; //存储当前所有的client连接，<connfd，shared_ptr<TcpConnection>>
     TcpConnectionCallback _newConnection;
     TcpConnectionCallback _closeConnection;
     TcpConnectionCallback _message;

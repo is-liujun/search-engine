@@ -51,7 +51,7 @@ Value Cache<Key, Value>::get(Key key)
     if (it != _idx.end())
     {
         auto &it_cache = it->second;
-        _cache.splice(_cache.begin(), _cache, it_cache);
+        _cache.splice(_cache.begin(), _cache, it_cache); //没有对_idx进行更新？——前面it_cache是&，是更新了
         return it_cache->second;
     }
     return Value();
@@ -130,12 +130,12 @@ list<pair<Key, Value>> &Cache<Key, Value>::getSyncCache()
 }
 
 template <class Key, class Value>
-void Cache<Key, Value>::swapCache()
+void Cache<Key, Value>::swapCache()  //将同步的缓存放到_cache 和 unmape中，以便进行LRU
 {
     _isSync = 1;
-    std::swap(_cache, _cacheSync);
+    std::swap(_cache, _cacheSync);  //std的交换函数
     _idx.clear();
-    for (auto it = _cache.begin(); it != _cache.end(); ++it)
+    for (auto it = _cache.begin(); it != _cache.end(); ++it)  //list<pair<Key, Value>> _cache;
     {
         _idx[(*it).first] = it;
     }

@@ -27,11 +27,11 @@ namespace SearchEngine
         _enDir = Configuration::getInstence()->getConfig()["enDir"];
         _cnFileNames = getFiles(_cnDir);
         _enFileNames = getFiles(_enDir);
-        getStopWords();
-        buildDict("cn");
+        getStopWords(); 
+        buildDict("cn"); //填充_dict<pair<string, int>>
         buildDict("en");
-        buildIndex();
-        storeDict(storeDictPath);
+        buildIndex(); //填充_index
+        storeDict(storeDictPath); //存储到输出文件中；
         storeIndex(storeIndexPath);
     }
 
@@ -63,14 +63,14 @@ namespace SearchEngine
         return tmp;
     }
 
-    void WordDict::buildDict(string type)
+    void WordDict:: buildDict(string type)
     {
         unordered_map<string, int> tmpDict;
         if (type == "en")
         {
             for (auto &file : _enFileNames)
             {
-                ifstream ifs(file);
+                ifstream ifs(file); //打开目录中每一个文件，读取文件中每一行，计算单词+频率；
                 string line;
                 while (getline(ifs, line))
                 {
@@ -80,7 +80,7 @@ namespace SearchEngine
                     {
                         string deal_word;
                         deal_word.reserve(word.size());
-                        for (char &c : word)
+                        for (char &c : word)  //把单词都转成小写字母；
                         {
                             if (isupper(c))
                             {
@@ -99,7 +99,7 @@ namespace SearchEngine
                         {
                             deal_word.pop_back();
                         }
-                        if (deal_word != " " && (_stop_word.count(deal_word) == 0))
+                        if (deal_word != " " && (_stop_word.count(deal_word) == 0)) //捕获的单词有效，则放入单词字典中；
                         {
                             ++tmpDict[deal_word];
                         }
@@ -113,7 +113,7 @@ namespace SearchEngine
             {
                 ifstream ifs(file);
                 string line;
-                while (getline(ifs, line))
+                while (getline(ifs, line)) //中文类似，遍历每一个中文文件，读取每一行，利用jieba分词工具；若有效，则放入词语字典中；
                 {
                     vector<string> list = _tool->cut(line);
                     for (size_t idx = 0;idx<list.size();++idx)
@@ -127,7 +127,7 @@ namespace SearchEngine
                 }
             }
         }
-        std::copy(tmpDict.begin(), tmpDict.end(), std::back_inserter(_dict));
+        std::copy(tmpDict.begin(), tmpDict.end(), std::back_inserter(_dict)); //将tmpDict信息放入_dict末尾；
     }
 
     void WordDict::getStopWords()
@@ -150,26 +150,26 @@ namespace SearchEngine
         }
     }
 
-    void WordDict::buildIndex()
+    void WordDict::buildIndex() //解析所有的单词，存储单个的字母或字 + 对应词的行号；
     {
         int i = 0;
-        for (auto elem : _dict)
+        for (auto elem : _dict) //_dict中包含中文、英文单词+频率；
         {
             string word = elem.first;
-            size_t charNums = word.size() / getByteNumUTF8(word[0]);
+            size_t charNums = word.size() / getByteNumUTF8(word[0]); //这里注意计算单词中字或字母的个数；——中文和英文大小是有区别的，
             for (size_t idx = 0, n = 0; n != charNums; ++idx, ++n)
             {
-                size_t charLen = getByteNumUTF8(word[idx]);
-                string subWord = word.substr(idx, charLen);
-                _index[subWord].insert(i);
+                size_t charLen = getByteNumUTF8(word[idx]); //注意：判断的是字母的第一个字节，并不是word[n]
+                string subWord = word.substr(idx, charLen); 
+                _index[subWord].insert(i); 
                 idx += (charLen - 1);
             }
             ++i;
         }
     }
 
-    size_t WordDict::getByteNumUTF8(const char byte)
-    {
+    size_t WordDict::getByteNumUTF8(const char byte) //通过判断首字节，用于区分当前传入的是字母还是文字：
+    {                                               //正常字母是0xxxxxxx，中文是1110xxxx
         int byteNum = 0;
         for (size_t idx = 0; idx < 6; ++idx)
         {

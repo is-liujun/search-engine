@@ -4,6 +4,7 @@
 #include <fstream>
 #include <sstream>
 #include <functional>
+#include <algorithm>
 
 #include "MyLog.hpp"
 #include "Configuration.hpp"
@@ -17,7 +18,7 @@ namespace SearchEngine
 {
     KeyWord::Cmp::Cmp(string word, int idx, string value, int frequency)
         : _key(word), _dictIdx(idx), _value(value), _frequency(frequency), _editDistence(editDistence(word, _value))
-    {
+    { //构造函数位置就计算好了最短编辑距离（当前词value与目的此word相似度）
     }
 
     bool KeyWord::Cmp::operator<(const Cmp &rhs) const
@@ -42,7 +43,7 @@ namespace SearchEngine
         int byteNum = 0;
         for (size_t i = 0; i < 6; ++i)
         {
-            if (ch & (1 << (7 - i)))
+            if (ch & (1 << (7 - i)))  //英文是1个字节，中文是11100000三个字节；
                 ++byteNum;
             else
                 break;
@@ -150,8 +151,8 @@ namespace SearchEngine
     /// @brief 从磁盘文件中读取目标文件内容加载到内存中
     void KeyWord::loadFile()
     {
-        string dictPath = Configuration::getInstence()->getConfig()["Dict"];
-        string dictIndexPath = Configuration::getInstence()->getConfig()["DictIndex"];
+        string dictPath = Configuration::getInstence()->getConfig()["Dict"]; //Dict中是含有所有的中文单词和英文单词和对应的词频
+        string dictIndexPath = Configuration::getInstence()->getConfig()["DictIndex"]; //含有单个字或字母对应的Dict中的下标
 
         ifstream dict(dictPath);
         ifstream dictIndex(dictIndexPath);
@@ -181,18 +182,19 @@ namespace SearchEngine
     /// @return 与关键词最接近的几个词语
     vector<string> KeyWord::query(string word)
     {
-        vector<string> cutWord = trans(word);
+        vector<string> cutWord = trans(word); //传入的word是含有中英文的字符串，需要拆分成单个字符或者单个字母的形式数组；
         MyLog::LogInfo("SearchEngine::KeyWord::query word = %s\n",word.c_str());
-        priority_queue<Cmp, vector<Cmp>, Less> cnQue;
+        priority_queue<Cmp, vector<Cmp>, Less> cnQue; //大根堆-中文的优先队列，存储比较后的单词：Cmp里面有当前结果string、最小编辑距离、频率
         priority_queue<Cmp, vector<Cmp>, Less> enQue;
         set<int> cnIndexList;
-        set<int> enIndexList;
-        for (auto &it : cutWord)
+        set<int> enIndexList; //存储英文字母对应的所有单词索引
+
+        for (auto &it : cutWord)//找到每一个字或字母，对应的所有的单词index
         {
 
             if (_index.count(it) > 0)
             {
-                if (charSize(it[0]) == 1)
+                if (charSize(it[0]) == 1) //英文
                 {
                     enIndexList.insert(_index[it].begin(), _index[it].end());
                 }
@@ -205,8 +207,8 @@ namespace SearchEngine
 
         for (int idx : cnIndexList)
         {
-            cnQue.push(Cmp(word, idx, _dict[idx].first, _dict[idx].second));
-            if (cnQue.size() > 5)
+            cnQue.push(Cmp(word, idx, _dict[idx].first, _dict[idx].second)); //Cmp(初始词, 当前词index，当前词string，当前词词频)
+            if (cnQue.size() > 5) //只保留前面5个单词
             {
                 cnQue.pop();
             }
@@ -257,7 +259,8 @@ namespace SearchEngine
                 enQue.pop();
             }
         }
-        reverse(cutWord.begin(), cutWord.end());
+        //最终只返回5个词汇，若是中英文夹杂的（得出中文2个、英文2个）；
+        std::reverse(cutWord.begin(), cutWord.end());
         MyLog::LogInfo("SearchEngine::KeyWord::query word result num = %d\n",cutWord.size());
         return cutWord;
     }

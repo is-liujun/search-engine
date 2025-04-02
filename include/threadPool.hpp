@@ -4,7 +4,7 @@
 #include "TaskQueue.hpp"
 
 #include <vector>
-#include <thread>
+#include <thread>  //C++11引入的标准库类；
 using std::vector;
 using std::thread;
 

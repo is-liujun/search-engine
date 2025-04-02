@@ -7,7 +7,9 @@
 #include <iostream>
 using std::unordered_map;
 
-template <class Key, class Value>
+
+//缓存管理器，基于LRU和线程本地缓存，通过模板类支持任意类型的键值对，并且为每个线程维护独立的缓存实例，
+template <class Key, class Value> //模板类，存储key,value信息；
 class CacheManager
 {
     using thread_id = std::thread::id;
@@ -89,13 +91,14 @@ template <class Key, class Value>
 void CacheManager<Key, Value>::sync()
 {
     std::cout << "start to sync" << std::endl;
-    // 选取主键pair<thread_id,Cache>
+    // 选择第一个线程的缓存作为主缓存；
     auto mainCache = _caches.begin();
-    // 加锁并将第一个cache复制到第二个cache
+
+    //将主缓存的修改，复制到同步缓存中；
     mainCache->second.copyCache();
     auto &syncCache = mainCache->second.getSyncCache();
 
-    // 将其他线程的修改同步到主键的第二个cache
+    // 遍历其他线程的缓存；将其修改都同步到主缓存的同步缓存中
     for (auto &cache : _caches)// pair<thread_id,Cache>
     {
         //跳过遍历主键
@@ -103,7 +106,7 @@ void CacheManager<Key, Value>::sync()
         {
             continue;
         }
-        auto pendingList = cache.second.getList();
+        auto pendingList = cache.second.getList(); //list<pair<Key, Value>>
         for(auto &item:pendingList)
         {
             std::cout<<"sync cache first = "<<item.first<< '\n';
@@ -111,10 +114,9 @@ void CacheManager<Key, Value>::sync()
         }
     }
 
-    // 将主键的第二个cache修改同步到其他线程。
+    // 将主缓存的同步缓存同步到其他线程的缓存中；
     for (auto &cache : _caches)
     {
-        //跳过遍历主键
         if(cache.first == mainCache->first)
         {
             continue;

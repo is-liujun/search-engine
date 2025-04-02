@@ -44,7 +44,7 @@ public:
         _root.info(msg,args...);
     }
 
-    void warn(const char *msg);
+    void warn(const char *msg); //MyLog.cc中实现了这4个函数，上面的四个好像没有用到；；；；
     void error(const char *msg);
     void debug(const char *msg);
     void info(const char *msg);
@@ -60,12 +60,16 @@ private:
     log4cpp::Category& _root;
 };
 
+//日志的宏定义：INFO(msg)，用于生成包含——[文件名：函数名：行号] + msg的日志信息；
 #define INFO(msg) string("[")\
     .append(__FILE__).append(": ")\
     .append(__FUNCTION__).append(": ")\
     .append(to_string(__LINE__)).append("] ")\
     .append(msg).c_str()
 
+
+//最终调用形式——日志宏：支持可变参数形式
+//举例，LogDebug("User %s logged in", "Alice");——》mylog：2023-10-10 12:34:56 [DEBUG] [main.cpp: main: 8] User Alice logged in
 #define LogInfo(msg,...) Mylogger::getInstance()->info(INFO(msg),##__VA_ARGS__);
 #define LogWarn(msg,...) Mylogger::getInstance()->warn(INFO(msg),##__VA_ARGS__);
 #define LogDebug(msg,...) Mylogger::getInstance()->debug(INFO(msg),##__VA_ARGS__);

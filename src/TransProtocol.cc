@@ -5,7 +5,7 @@
 
 TransProtocol::TransProtocol(const char *str)
 {
-    _transId = *(reinterpret_cast<const int*>(str));
+    _transId = *(reinterpret_cast<const int*>(str)); //这个transId是ChooseId，是查询单词还是查询文本；
     _message = str+sizeof(int);
     _size = _message.size()+sizeof(int);
 }

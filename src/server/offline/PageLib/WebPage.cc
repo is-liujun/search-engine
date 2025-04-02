@@ -12,7 +12,7 @@ namespace SearchEngine
     {
         _docText = doc;
         tinyxml2::XMLDocument xml;
-        auto result = xml.Parse(doc.c_str(), doc.size());
+        auto result = xml.Parse(doc.c_str(), doc.size()); //利用tinyxml2第三方库把这个str解析成xml结构信息；
         if (result != tinyxml2::XML_SUCCESS)
         {
             std::cerr << result << '\n';
@@ -45,7 +45,7 @@ namespace SearchEngine
         {
             if (word != " " && _stop_word.count(word) == 0)
             {
-                ++_wordsMap[word];
+                ++_wordsMap[word]; //计算word的词频；；
             }
         }
     }
@@ -91,7 +91,7 @@ namespace SearchEngine
         {
             if (!top.empty())
             {
-                _topWords.push_back(top.top().first);
+                _topWords.push_back(top.top().first); //把频率最高的10个单词放到每一个WebPage对应的_topWords中；
                 top.pop();
             }
         }
