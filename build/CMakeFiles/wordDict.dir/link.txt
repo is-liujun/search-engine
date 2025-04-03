@@ -1,0 +1,1 @@
+/usr/bin/c++ -g -rdynamic CMakeFiles/wordDict.dir/src/server/offline/WordDict/WordDict.cc.o CMakeFiles/wordDict.dir/src/server/offline/WordDict/WordSplit_JieBa.cc.o CMakeFiles/wordDict.dir/src/server/Configuration.cc.o CMakeFiles/wordDict.dir/testWord.cc.o -o wordDict 
