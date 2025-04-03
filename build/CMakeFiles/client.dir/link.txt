@@ -1,1 +1,0 @@
-/usr/bin/c++ -g -rdynamic CMakeFiles/client.dir/src/TransProtocol.cc.o CMakeFiles/client.dir/src/client/client.cc.o -o client 

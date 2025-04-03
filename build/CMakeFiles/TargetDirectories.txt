@@ -1,9 +1,0 @@
-/home/jliu/search-engine/build/CMakeFiles/wordDict.dir
-/home/jliu/search-engine/build/CMakeFiles/keyWord.dir
-/home/jliu/search-engine/build/CMakeFiles/pagelib.dir
-/home/jliu/search-engine/build/CMakeFiles/queryPage.dir
-/home/jliu/search-engine/build/CMakeFiles/server.dir
-/home/jliu/search-engine/build/CMakeFiles/redisServer.dir
-/home/jliu/search-engine/build/CMakeFiles/client.dir
-/home/jliu/search-engine/build/CMakeFiles/edit_cache.dir
-/home/jliu/search-engine/build/CMakeFiles/rebuild_cache.dir
