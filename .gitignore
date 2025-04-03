@@ -45,4 +45,4 @@ conf/
 *.xml
 
 # log file
-*.log
+*.logbuild
